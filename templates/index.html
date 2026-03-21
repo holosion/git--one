@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Student Stack System</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 
 <body>
@@ -12,6 +15,38 @@
 <div class="container">
     <div class="header">
         <h2>Student Stack System</h2>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Complexity Information -->
+    <div class="complexity-section">
+        <h3>Complexity Analysis</h3>
+        <div class="complexity-grid">
+            <div class="complexity-item">
+                <strong>Push Operation:</strong>
+                <p>Time: {{ complexity.push_time }}</p>
+                <p>Space: {{ complexity.push_space }}</p>
+            </div>
+            <div class="complexity-item">
+                <strong>Pop Operation:</strong>
+                <p>Time: {{ complexity.pop_time }}</p>
+                <p>Space: {{ complexity.pop_space }}</p>
+            </div>
+            <div class="complexity-item">
+                <strong>Overall Space:</strong>
+                <p>{{ complexity.overall_space }}</p>
+            </div>
+        </div>
     </div>
 
     <!-- Form to add a student -->
@@ -40,29 +75,49 @@
 
     <div class="stack-section">
         <h3>Stack Contents</h3>
-
-        {% if students %}
-            <ul class="stack-list">
-                <!-- loop through students in stack (reversed so top of stack is first) -->
-                {% for student in students|reverse %}
-                <li class="stack-item">
-                    <div class="student-info">
-                        <span class="student-name">{{student.name}}</span>
-                        <span class="student-marks">Marks: {{student.marks|join(', ')}}</span>
-                    </div>
-                    <div class="student-average">
-                        Avg: {{student.average|round(1)}}
-                    </div>
-                </li>
-                {% endfor %}
-            </ul>
-        {% else %}
-            <div class="empty-stack">
-                The stack is currently empty.
-            </div>
-        {% endif %}
+        <div id="stack-root"></div>
     </div>
 </div>
+
+<script type="text/babel">
+const { useState, useEffect } = React;
+
+function StackApp() {
+    const [students, setStudents] = useState([]);
+
+    useEffect(() => {
+        // Load initial students from server-rendered data
+        const initialStudents = {{ students|tojson }};
+        setStudents(initialStudents.reverse()); // Reverse to show top first
+    }, []);
+
+    return (
+        <div>
+            {students.length > 0 ? (
+                <ul className="stack-list">
+                    {students.map((student, index) => (
+                        <li key={index} className="stack-item animate-in" style={{animationDelay: `${index * 0.1}s`}}>
+                            <div className="student-info">
+                                <span className="student-name">{student.name}</span>
+                                <span className="student-marks">Marks: {student.marks.join(', ')}</span>
+                            </div>
+                            <div className="student-average">
+                                Avg: {student.average.toFixed(1)}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            ) : (
+                <div className="empty-stack">
+                    The stack is currently empty.
+                </div>
+            )}
+        </div>
+    );
+}
+
+ReactDOM.render(<StackApp />, document.getElementById('stack-root'));
+</script>
 
 </body>
 </html>

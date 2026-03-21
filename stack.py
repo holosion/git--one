@@ -1,4 +1,5 @@
 # Stack to store students and calculate average marks
+import time
 
 
 
@@ -8,12 +9,20 @@ class Stack:
         self.students = []
 
     def push(self, student):
+        start_time = time.time()
         self.students.append(student)
+        end_time = time.time()
+        time_taken = end_time - start_time
+        return time_taken
 
     def pop(self):
         if self.is_empty():
-            return "Stack is empty"
-        return self.students.pop()
+            return "Stack is empty", 0
+        start_time = time.time()
+        popped = self.students.pop()
+        end_time = time.time()
+        time_taken = end_time - start_time
+        return popped, time_taken
 
     def peek(self):
         if self.is_empty():
